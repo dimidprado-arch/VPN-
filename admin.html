@@ -1,0 +1,1302 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Admin Control</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root[data-theme="dark"] {
+      --bg-gradient: #121316;
+      --top-fade-color: rgba(18, 19, 22, 0.92);
+      --glass-bg: #1c1e24;
+      --glass-highlight: transparent;
+      --text-primary: #eceef2;
+      --text-secondary: #8c92a0;
+      --accent: #4a89dc;
+      --accent-secondary: #3b76c4;
+      --accent-glow: rgba(74, 137, 220, 0.16);
+      --success: #52a87a;
+      --success-secondary: #439368;
+      --success-glow: rgba(82, 168, 122, 0.24);
+      --danger: #cf6679;
+      --input-bg: #252830;
+      --selected-bg: rgba(74, 137, 220, 0.16);
+      --pill-soft: #23262e;
+      --on-accent: #ffffff;
+    }
+    :root[data-theme="light"] {
+      --bg-gradient: #f2f3f5;
+      --top-fade-color: rgba(242, 243, 245, 0.92);
+      --glass-bg: #ffffff;
+      --glass-highlight: transparent;
+      --text-primary: #181a1f;
+      --text-secondary: #6c7280;
+      --accent: #3574c4;
+      --accent-secondary: #2b61a6;
+      --accent-glow: rgba(53, 116, 196, 0.14);
+      --success: #3e8e63;
+      --success-secondary: #327651;
+      --success-glow: rgba(62, 142, 99, 0.22);
+      --danger: #c44d5e;
+      --input-bg: #e9ebef;
+      --selected-bg: rgba(53, 116, 196, 0.12);
+      --pill-soft: #eef0f3;
+      --on-accent: #ffffff;
+    }
+    :root {
+      --font-display: 'Unbounded', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-body); -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; border: none; outline: none; }
+    body { min-height: 100vh; background: var(--bg-gradient); color: var(--text-primary); padding: 14px 16px 128px; transition: background 0.25s ease, color 0.25s ease; }
+
+    .top-blur-fade {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 76px;
+      pointer-events: none;
+      z-index: 40;
+      background: linear-gradient(to bottom, var(--top-fade-color) 0%, rgba(0, 0, 0, 0) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0) 100%);
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0) 100%);
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+      border-radius: 40px;
+      padding: 22px;
+      margin-bottom: 14px;
+    }
+
+    .current-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .current-country {
+      font-family: var(--font-display);
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+    .current-code {
+      padding: 11px 18px;
+      border-radius: 999px;
+      background: var(--selected-bg);
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .current-unified-panel {
+      padding: 16px 18px;
+      border-radius: 28px;
+      background: var(--input-bg);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 16px;
+    }
+    .metric-cell {
+      min-width: 0;
+    }
+    .metric-cell.span-2 {
+      grid-column: span 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .metric-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+    .metric-val {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 4px;
+      word-break: break-all;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric-cell.span-2 .metric-val { margin-top: 0; font-size: 15px; }
+    .metric-val.ok { color: var(--success); }
+    .metric-val.bad { color: var(--danger); }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 10px; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--text-secondary);
+      margin: 18px 14px 10px;
+    }
+    .section-title:first-child { margin-top: 4px; }
+    .section-title.center { text-align: center; margin-left: 0; margin-right: 0; }
+    .card-heading {
+      font-family: var(--font-display);
+      font-size: 14px; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 12px;
+    }
+
+    .server-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; border-radius: 32px;
+      background: var(--pill-soft);
+      margin-bottom: 10px; cursor: pointer; transition: background 0.2s ease;
+    }
+    .server-item:last-child { margin-bottom: 0; }
+    .server-item.selected { background: var(--selected-bg); }
+    .server-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .country-badge {
+      width: 48px; height: 48px; flex-shrink: 0; border-radius: 999px;
+      background: var(--input-bg); display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 700; font-size: 13px; color: var(--accent);
+    }
+    .server-name { font-weight: 700; font-size: 15px; }
+    .server-domain { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ping-pill {
+      flex-shrink: 0;
+      min-height: 54px;
+      padding: 0 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: var(--input-bg);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+    .ping-pill.offline {
+      background: rgba(207, 102, 121, 0.14);
+      color: var(--danger);
+    }
+
+    .os-tabs {
+      display: flex; gap: 8px; margin-bottom: 14px;
+      background: var(--input-bg); padding: 7px; border-radius: 999px;
+    }
+    .os-tab {
+      flex: 1; min-height: 56px; padding: 0 12px; border-radius: 999px;
+      background: transparent; color: var(--text-secondary); font-size: 13px; font-weight: 700;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .os-tab.active { background: var(--glass-bg); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.16); }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .theme-choice {
+      min-height: 58px;
+      padding: 14px 18px;
+      border-radius: 999px;
+      background: var(--input-bg);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .theme-choice.active {
+      background: var(--accent);
+      color: var(--on-accent);
+      box-shadow: 0 4px 14px var(--accent-glow);
+    }
+
+    #tabMenu {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 142px);
+    }
+    .menu-bottom-meta {
+      margin-top: auto;
+      padding-top: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+    }
+    .menu-version-val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .cred-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 14px 18px; background: var(--input-bg); border-radius: 30px; margin-bottom: 10px;
+    }
+    .cred-row:last-child { margin-bottom: 0; }
+    .cred-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); }
+    .cred-val { font-family: var(--font-mono); font-size: 13px; font-weight: 600; margin-top: 2px; word-break: break-all; }
+    .copy-btn {
+      flex-shrink: 0;
+      width: 56px;
+      height: 56px;
+      background: var(--selected-bg);
+      color: var(--accent); cursor: pointer;
+      border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+      transition: transform 0.15s ease;
+    }
+    .copy-btn:active { transform: scale(0.95); }
+
+    .mini-action-btn {
+      flex-shrink: 0;
+      min-height: 44px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: var(--selected-bg);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, background 0.2s ease;
+    }
+    .mini-action-btn:active { transform: scale(0.96); }
+    .mini-action-btn.danger {
+      background: rgba(207, 102, 121, 0.16);
+      color: var(--danger);
+    }
+
+    .admin-node-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 30px;
+      background: var(--input-bg);
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .admin-node-row:last-child { margin-bottom: 0; }
+    .admin-node-row:active { background: var(--selected-bg); }
+
+    .add-node-drawer {
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 30px;
+      background: var(--pill-soft);
+    }
+
+    .admin-detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .back-pill-btn {
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .node-power-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0 18px;
+      gap: 8px;
+    }
+    .big-round-power-btn {
+      width: 116px;
+      height: 116px;
+      border-radius: 999px;
+      background: var(--success);
+      color: var(--on-accent);
+      box-shadow: 0 10px 26px var(--success-glow);
+      cursor: pointer;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: transform 0.16s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .big-round-power-btn:active {
+      transform: scale(0.95);
+      background: var(--success-secondary);
+    }
+    .big-round-power-btn.is-off {
+      background: var(--input-bg);
+      color: var(--danger);
+      box-shadow: none;
+    }
+    .big-round-power-label {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .detail-specs-box {
+      padding: 16px 18px;
+      border-radius: 28px;
+      background: var(--input-bg);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .user-accordion-item {
+      background: var(--input-bg);
+      border-radius: 30px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .user-accordion-item:last-child { margin-bottom: 0; }
+    .user-accordion-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 18px;
+      cursor: pointer;
+    }
+    .user-accordion-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .user-dev-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--selected-bg);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .user-devices-panel {
+      padding: 0 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .user-device-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 15px;
+      border-radius: 22px;
+      background: var(--glass-bg);
+    }
+
+    .primary-btn {
+      width: 100%; min-height: 62px; padding: 16px 22px; border-radius: 999px;
+      background: var(--accent);
+      color: var(--on-accent); font-size: 15px; font-weight: 700; cursor: pointer;
+      box-shadow: 0 4px 16px var(--accent-glow);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 10px; transition: transform 0.15s ease, background 0.2s ease;
+    }
+    .primary-btn:active { transform: scale(0.98); background: var(--accent-secondary); }
+    .primary-btn.danger-btn {
+      background: rgba(207, 102, 121, 0.18);
+      color: var(--danger);
+      box-shadow: none;
+    }
+    .secondary-btn {
+      width: 100%; min-height: 54px; padding: 14px 20px; border-radius: 999px;
+      background: var(--input-bg);
+      color: var(--text-primary); font-size: 13px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 10px; transition: transform 0.15s ease, background 0.2s ease;
+    }
+    .secondary-btn:active { transform: scale(0.98); background: var(--pill-soft); }
+
+    input, select.select-pill {
+      width: 100%; min-height: 56px; padding: 15px 22px; border-radius: 999px;
+      background: var(--input-bg);
+      color: var(--text-primary); font-size: 15px; font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .nav-bar {
+      position: fixed; bottom: 14px; left: 16px; right: 16px; z-index: 50;
+      background: var(--glass-bg);
+      border-radius: 999px;
+      display: flex; gap: 6px; padding: 7px; box-shadow: 0 8px 28px rgba(0,0,0,0.26);
+    }
+    .nav-item {
+      flex: 1; min-height: 60px; padding: 10px 6px; border-radius: 999px;
+      background: transparent; color: var(--text-secondary); font-size: 11px; font-weight: 700;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+      cursor: pointer;
+    }
+    .nav-item.active {
+      background: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      background: var(--text-primary); color: var(--input-bg);
+      padding: 14px 24px; border-radius: 999px; font-size: 14px; font-weight: 700;
+      z-index: 999; opacity: 0; transition: opacity 0.25s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="top-blur-fade" aria-hidden="true"></div>
+  <div id="toast" class="toast">Скопировано</div>
+
+  <div id="lockScreen" class="glass-card hidden">
+    <h2 class="card-heading" style="font-size: 17px; margin-bottom: 6px;">Закрытый доступ</h2>
+    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.45;">
+      Введите пароль, выданный администратором.
+    </p>
+    <input type="password" id="gatePassword" placeholder="Пароль доступа" />
+    <button class="primary-btn" onclick="submitPassword()">Войти</button>
+  </div>
+
+  <div id="appContent">
+
+    <div id="tabConnect" class="hidden">
+      <div class="section-title center">Текущий сервер</div>
+      <div class="glass-card">
+        <div class="current-top">
+          <div>
+            <div class="current-country" id="currentCountry">Германия</div>
+            <div class="server-domain" id="currentDomain" style="margin-top: 4px; font-size: 12px;">de.node.local</div>
+          </div>
+          <span class="current-code" id="currentCode">DE</span>
+        </div>
+        <div class="current-unified-panel">
+          <div class="metric-cell">
+            <div class="metric-label">Задержка</div>
+            <div class="metric-val" id="currentPing">24 мс</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Протокол</div>
+            <div class="metric-val">IKEv2 / IPsec</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Адрес узла</div>
+            <div class="metric-val" id="currentHost">de.node.local</div>
+          </div>
+          <div class="metric-cell">
+            <div class="metric-label">Подключение</div>
+            <div class="metric-val ok" id="currentConnState">Активно</div>
+          </div>
+          <div class="metric-cell span-2">
+            <div class="metric-label">Время подключения</div>
+            <div class="metric-val" id="currentUptime">00:00:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Локации</div>
+      <div id="serverList" class="glass-card" style="padding: 14px;"></div>
+
+      <div class="section-title">Подключение без приложений</div>
+      <div class="glass-card">
+        <div class="os-tabs">
+          <button class="os-tab active" onclick="selectOS('apple', this)">iOS / macOS</button>
+          <button class="os-tab" onclick="selectOS('windows', this)">Windows</button>
+          <button class="os-tab" onclick="selectOS('android', this)">Android</button>
+        </div>
+        <div id="credBox">
+          <div class="cred-row"><div><div class="cred-label">Протокол</div><div class="cred-val">IKEv2 / IPsec</div></div></div>
+          <div class="cred-row">
+            <div><div class="cred-label">Узел и Remote ID</div><div class="cred-val" id="credServer">--</div></div>
+            <button class="copy-btn" onclick="copyText('credServer')" aria-label="Скопировать узел и Remote ID" title="Скопировать">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <div class="cred-row">
+            <div><div class="cred-label">Логин</div><div class="cred-val" id="credLogin">user_acc</div></div>
+            <button class="copy-btn" onclick="copyText('credLogin')" aria-label="Скопировать логин" title="Скопировать">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <div class="cred-row">
+            <div><div class="cred-label">Пароль</div><div class="cred-val" id="credPass">••••••••</div></div>
+            <button class="copy-btn" onclick="copyText('credPass')" aria-label="Скопировать пароль" title="Скопировать">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+        <button id="appleDownloadBtn" class="primary-btn" onclick="downloadAppleConfig()">Установить профиль iOS / macOS</button>
+      </div>
+    </div>
+
+    <div id="tabDevices" class="hidden">
+      <div class="glass-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+          <h3 class="card-heading" style="margin-bottom: 0;">Активные устройства</h3>
+          <span id="deviceCounter" style="font-family: var(--font-mono); font-size: 14px; font-weight: 700; color: var(--accent);">1 / 3</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.45;">
+          Устройства, подключенные по вашей учетной записи через встроенный клиент.
+        </p>
+        <div id="deviceList"></div>
+      </div>
+    </div>
+
+    <div id="tabMenu" class="hidden">
+      <div class="glass-card">
+        <h3 class="card-heading">Тема интерфейса</h3>
+        <div class="theme-grid">
+          <button id="themeBtnDark" class="theme-choice active" onclick="setTheme('dark')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            Тёмная
+          </button>
+          <button id="themeBtnLight" class="theme-choice" onclick="setTheme('light')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            Светлая
+          </button>
+        </div>
+      </div>
+      <div class="menu-bottom-meta">
+        <span>App Version</span>
+        <span>·</span>
+        <span class="menu-version-val">v1.0</span>
+      </div>
+    </div>
+
+    <div id="tabAdmin">
+      <div id="adminMainView">
+        <div class="section-title center">Панель управления</div>
+
+        <div class="glass-card">
+          <h3 class="card-heading">Мои серверы</h3>
+          <div id="adminServersList"></div>
+          <button id="toggleAddNodeBtn" class="primary-btn" onclick="toggleAddServerForm()">Добавить новый</button>
+
+          <div id="addServerForm" class="add-node-drawer hidden">
+            <input type="text" id="newSrvIp" placeholder="IP адрес" />
+            <input type="text" id="newSrvDomain" placeholder="Домен / Remote ID" />
+            <input type="text" id="newSrvCountry" placeholder="Страна и код (например, Германия / DE)" />
+            <button class="primary-btn" onclick="adminAddServer()">Сохранить сервер</button>
+            <button class="secondary-btn" onclick="toggleAddServerForm(false)">Скрыть</button>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="card-heading">Выдать доступ пользователю</h3>
+          <input type="text" id="newUserUsername" placeholder="Юзернейм (например, @ivan_k)" />
+          <input type="text" id="newUserPass" placeholder="Пароль" />
+          <input type="number" id="newUserMaxDev" value="3" placeholder="Лимит устройств (по умолчанию 3)" />
+          <button class="primary-btn" onclick="adminAddUser()">Выдать доступ</button>
+        </div>
+
+        <div class="glass-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+            <h3 class="card-heading" style="margin-bottom: 0;">Пользователи</h3>
+            <span id="adminUsersCount" style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--accent);">0</span>
+          </div>
+          <div id="adminUsersList"></div>
+        </div>
+
+        <div class="glass-card">
+          <h3 class="card-heading">Смена пароля доступа</h3>
+          <input type="text" id="newAppPass" placeholder="Новый пароль входа" />
+          <button class="primary-btn danger-btn" onclick="adminChangePass()">Сменить пароль и сбросить сессии</button>
+        </div>
+      </div>
+
+      <div id="adminNodeDetailView" class="hidden">
+        <div class="glass-card">
+          <div class="admin-detail-header">
+            <button class="back-pill-btn" onclick="closeAdminNodeDetail()">← Назад</button>
+            <span class="current-code" id="detailNodeCode">DE</span>
+          </div>
+
+          <div class="current-country" id="detailNodeCountry">Германия</div>
+          <div class="server-domain" id="detailNodeDomain" style="margin-top: 4px; margin-bottom: 14px; font-size: 12px;">de.node.local</div>
+
+          <div class="node-power-wrap">
+            <button id="detailBigPowerBtn" class="big-round-power-btn" onclick="adminToggleDetailNodePower()" aria-label="Включить или выключить узел">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+              <span class="big-round-power-label" id="detailBigPowerLabel">ВКЛ</span>
+            </button>
+          </div>
+
+          <div class="detail-specs-box">
+            <div class="metric-cell">
+              <div class="metric-label">Адрес (IP)</div>
+              <div class="metric-val" id="detailNodeIp">185.22.10.1</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-label">Домен / Remote ID</div>
+              <div class="metric-val" id="detailNodeHost">de.node.local</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-label">Задержка</div>
+              <div class="metric-val" id="detailNodePing">24 мс</div>
+            </div>
+            <div class="metric-cell">
+              <div class="metric-label">Состояние</div>
+              <div class="metric-val ok" id="detailNodeStatus">Активно</div>
+            </div>
+            <div class="metric-cell span-2">
+              <div class="metric-label">Протокол</div>
+              <div class="metric-val">IKEv2 / IPsec</div>
+            </div>
+          </div>
+
+          <button class="primary-btn" onclick="adminRestartDetailNode()">Перезагрузить</button>
+          <button class="primary-btn danger-btn" onclick="adminDeleteDetailNode()">Удалить</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav id="bottomNav" class="nav-bar">
+    <button class="nav-item" onclick="switchTab('tabConnect', this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Локации
+    </button>
+    <button class="nav-item" onclick="switchTab('tabDevices', this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      Устройства
+    </button>
+    <button class="nav-item" onclick="switchTab('tabMenu', this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      Меню
+    </button>
+    <button id="adminNavBtn" class="nav-item active" onclick="switchTab('tabAdmin', this)">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Админ
+    </button>
+  </nav>
+
+<script>
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  try { tg && tg.expand && tg.expand(); } catch (_) {}
+
+  const ROLE_QUERY = new URLSearchParams(window.location.search).get('role');
+  if (ROLE_QUERY === 'user') {
+    window.location.replace('user.html?role=user');
+  }
+
+  let state = {
+    servers: [
+      { id: 1, country: 'Германия', country_code: 'DE', ip: '185.22.10.1', domain: 'de.node.local', ping_ms: 24, online: true },
+      { id: 2, country: 'Нидерланды', country_code: 'NL', ip: '185.22.10.2', domain: 'nl.node.local', ping_ms: 31, online: true }
+    ],
+    users: [
+      {
+        id: 1,
+        username: '@user_acc',
+        login: 'user_acc',
+        max_devices: 3,
+        devices: [
+          { id: 'd1', name: 'iPhone 15 Pro', os: 'iOS', ip: '10.10.0.2' }
+        ]
+      },
+      {
+        id: 2,
+        username: '@alex_dev',
+        login: 'alex_dev',
+        max_devices: 3,
+        devices: [
+          { id: 'd2', name: 'MacBook Air', os: 'macOS', ip: '10.10.0.3' },
+          { id: 'd3', name: 'Pixel 8', os: 'Android', ip: '10.10.0.4' }
+        ]
+      }
+    ],
+    selectedServerId: 1,
+    detailServerId: null,
+    expandedUserIds: [],
+    connectedSince: Date.now(),
+    isAdmin: true,
+    demoMode: true
+  };
+
+  function formatDuration(ms) {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const hrs = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+    const mins = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+    const secs = String(totalSec % 60).padStart(2, '0');
+    return `${hrs}:${mins}:${secs}`;
+  }
+
+  function updateUptimeDisplay() {
+    const srv = state.servers.find(s => s.id === state.selectedServerId);
+    const online = isServerOnline(srv);
+    const el = document.getElementById('currentUptime');
+    if (!el) return;
+    if (!online || !state.connectedSince) {
+      el.textContent = '00:00:00';
+      el.classList.add('bad');
+      return;
+    }
+    el.textContent = formatDuration(Date.now() - state.connectedSince);
+    el.classList.remove('bad');
+  }
+
+  function syncThemeButtons() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    const darkBtn = document.getElementById('themeBtnDark');
+    const lightBtn = document.getElementById('themeBtnLight');
+    if (darkBtn) darkBtn.classList.toggle('active', !isLight);
+    if (lightBtn) lightBtn.classList.toggle('active', isLight);
+  }
+
+  function setTheme(themeName) {
+    const next = themeName === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    syncThemeButtons();
+    try { localStorage.setItem('theme', next); } catch (_) {}
+  }
+
+  function isServerOnline(srv) {
+    if (!srv) return false;
+    if (typeof srv.online === 'boolean') return srv.online;
+    if (typeof srv.is_online === 'boolean') return srv.is_online;
+    return srv.ping_ms !== null && srv.ping_ms !== undefined && Number(srv.ping_ms) > 0;
+  }
+
+  function applyNodeIndicator(srv) {
+    const online = isServerOnline(srv);
+    const connState = document.getElementById('currentConnState');
+    const pingEl = document.getElementById('currentPing');
+
+    connState.textContent = online ? 'Активно' : 'Не в сети';
+    connState.classList.toggle('ok', online);
+    connState.classList.toggle('bad', !online);
+
+    if (online) {
+      pingEl.textContent = `${srv.ping_ms} мс`;
+      pingEl.classList.remove('bad');
+    } else {
+      pingEl.textContent = '--';
+      pingEl.classList.add('bad');
+    }
+    updateUptimeDisplay();
+  }
+
+  function toggleAddServerForm(forceState) {
+    const drawer = document.getElementById('addServerForm');
+    const btn = document.getElementById('toggleAddNodeBtn');
+    if (!drawer || !btn) return;
+    const isHidden = drawer.classList.contains('hidden');
+    const nextOpen = typeof forceState === 'boolean' ? forceState : isHidden;
+    drawer.classList.toggle('hidden', !nextOpen);
+    btn.classList.toggle('hidden', nextOpen);
+  }
+
+  function renderAdminServers() {
+    const el = document.getElementById('adminServersList');
+    if (!el) return;
+    el.innerHTML = state.servers.map(s => {
+      const online = isServerOnline(s);
+      return `
+        <div class="admin-node-row" onclick="openAdminNodeDetail(${s.id})">
+          <div class="server-left">
+            <div class="country-badge">${s.country_code}</div>
+            <div style="min-width:0;">
+              <div class="server-name">${s.country}</div>
+              <div class="server-domain">${s.ip || '--'} · ${s.domain}</div>
+            </div>
+          </div>
+          <span class="ping-pill ${online ? '' : 'offline'}">${online ? `${s.ping_ms} мс` : 'OFF'}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function syncDetailNodeView(srv) {
+    const online = isServerOnline(srv);
+    document.getElementById('detailNodeCode').textContent = srv.country_code;
+    document.getElementById('detailNodeCountry').textContent = srv.country;
+    document.getElementById('detailNodeDomain').textContent = srv.domain;
+    document.getElementById('detailNodeIp').textContent = srv.ip || '--';
+    document.getElementById('detailNodeHost').textContent = srv.domain;
+    document.getElementById('detailNodePing').textContent = online ? `${srv.ping_ms} мс` : '--';
+
+    const statusEl = document.getElementById('detailNodeStatus');
+    statusEl.textContent = online ? 'Активно' : 'Не в сети';
+    statusEl.classList.toggle('ok', online);
+    statusEl.classList.toggle('bad', !online);
+
+    const powerBtn = document.getElementById('detailBigPowerBtn');
+    const powerLabel = document.getElementById('detailBigPowerLabel');
+    if (powerBtn) powerBtn.classList.toggle('is-off', !online);
+    if (powerLabel) powerLabel.textContent = online ? 'ВКЛ' : 'ВЫКЛ';
+  }
+
+  function openAdminNodeDetail(serverId) {
+    const srv = state.servers.find(s => s.id === serverId);
+    if (!srv) return;
+    state.detailServerId = serverId;
+    syncDetailNodeView(srv);
+
+    document.getElementById('adminMainView').classList.add('hidden');
+    document.getElementById('adminNodeDetailView').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function closeAdminNodeDetail() {
+    state.detailServerId = null;
+    document.getElementById('adminNodeDetailView').classList.add('hidden');
+    document.getElementById('adminMainView').classList.remove('hidden');
+    renderAdminServers();
+  }
+
+  function getUserDevicesList(u) {
+    if (Array.isArray(u.devices)) return u.devices;
+    const count = Number(u.active_devices || 0);
+    return Array.from({ length: count }, (_, idx) => ({
+      id: `${u.id}-${idx}`,
+      name: `Устройство ${idx + 1}`,
+      os: 'IKEv2',
+      ip: `10.10.0.${10 + idx}`
+    }));
+  }
+
+  function toggleUserDevices(userId) {
+    const idx = state.expandedUserIds.indexOf(userId);
+    if (idx === -1) state.expandedUserIds.push(userId);
+    else state.expandedUserIds.splice(idx, 1);
+    renderAdminUsers();
+  }
+
+  function renderAdminUsers(usersList) {
+    const el = document.getElementById('adminUsersList');
+    const countEl = document.getElementById('adminUsersCount');
+    const list = usersList || state.users;
+    if (countEl) countEl.textContent = String(list.length);
+    if (!el) return;
+
+    if (!list.length) {
+      el.innerHTML = `<div class="cred-row"><div class="cred-label">Пользователей пока нет</div></div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(u => {
+      const devs = getUserDevicesList(u);
+      const maxDev = u.max_devices || 3;
+      const expanded = state.expandedUserIds.includes(u.id);
+      const userLabel = u.username
+        ? (u.username.startsWith('@') ? u.username : `@${u.username}`)
+        : (u.login ? `@${u.login}` : 'Пользователь');
+
+      const devicesHtml = expanded ? `
+        <div class="user-devices-panel">
+          ${devs.length ? devs.map(d => `
+            <div class="user-device-card">
+              <div style="min-width:0;">
+                <div style="font-weight:700; font-size:13px;">${d.name || 'Устройство'}</div>
+                <div class="cred-label">${d.os ? `${d.os} · ` : ''}IP: ${d.ip || '--'}</div>
+              </div>
+              <button class="mini-action-btn danger" onclick="event.stopPropagation(); adminRevokeDevice(${u.id}, '${d.id}')">Сбросить</button>
+            </div>
+          `).join('') : `
+            <div class="user-device-card">
+              <div class="cred-label">Подключенных устройств нет</div>
+            </div>
+          `}
+          <div style="display:flex; gap:8px; margin-top:2px;">
+            <button class="mini-action-btn" style="flex:1;" onclick="event.stopPropagation(); adminResetUserPass(${u.id}, '${userLabel}')">Сменить пароль</button>
+            <button class="mini-action-btn danger" style="flex:1;" onclick="event.stopPropagation(); adminDeleteUser(${u.id})">Отозвать доступ</button>
+          </div>
+        </div>
+      ` : '';
+
+      return `
+        <div class="user-accordion-item">
+          <div class="user-accordion-head" onclick="toggleUserDevices(${u.id})">
+            <div style="min-width:0;">
+              <div style="font-weight:700; font-size:14px;">${userLabel}</div>
+              <div class="cred-label">${expanded ? 'Скрыть устройства' : 'Показать устройства'}</div>
+            </div>
+            <div class="user-accordion-meta">
+              <span class="user-dev-badge">${devs.length} / ${maxDev}</span>
+            </div>
+          </div>
+          ${devicesHtml}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  try {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+  } catch (_) {}
+  syncThemeButtons();
+
+  async function api(url, method = 'GET', body = null) {
+    const initData = (tg && tg.initData) ? tg.initData : '';
+    const opts = { method, headers: { 'Content-Type': 'application/json', 'X-Telegram-Init-Data': initData } };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(url, opts);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Ошибка запроса');
+    }
+    return res.json();
+  }
+
+  function renderServerList() {
+    const list = document.getElementById('serverList');
+    list.innerHTML = state.servers.map(s => {
+      const online = isServerOnline(s);
+      return `
+        <div class="server-item ${state.selectedServerId === s.id ? 'selected' : ''}" onclick="selectServer(${s.id})">
+          <div class="server-left"><div class="country-badge">${s.country_code}</div><div style="min-width:0;"><div class="server-name">${s.country}</div><div class="server-domain">${s.domain}</div></div></div>
+          <span class="ping-pill ${online ? '' : 'offline'}">${online ? `${s.ping_ms} мс` : 'OFF'}</span>
+        </div>
+      `;
+    }).join('');
+    renderAdminServers();
+  }
+
+  function selectServer(id) {
+    const changed = state.selectedServerId !== id;
+    state.selectedServerId = id;
+    const srv = state.servers.find(s => s.id === id);
+    if (!srv) return;
+    if (changed) {
+      state.connectedSince = isServerOnline(srv) ? Date.now() : null;
+    }
+    document.getElementById('currentCountry').textContent = srv.country;
+    document.getElementById('currentCode').textContent = srv.country_code;
+    document.getElementById('currentDomain').textContent = srv.domain;
+    document.getElementById('currentHost').textContent = srv.domain;
+    document.getElementById('credServer').textContent = srv.domain;
+    applyNodeIndicator(srv);
+    renderServerList();
+  }
+
+  function renderDevices(devices) {
+    const el = document.getElementById('deviceList');
+    el.innerHTML = devices.map(d => `
+      <div class="cred-row"><div><div style="font-weight:700; font-size:13px;">${d.name}</div><div class="cred-label">IP: ${d.ip}</div></div><span style="font-size:12px; font-weight:700; color:var(--success);">Активно</span></div>
+    `).join('');
+  }
+
+  function selectOS(os, btn) {
+    document.querySelectorAll('.os-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('appleDownloadBtn').classList.toggle('hidden', os !== 'apple');
+  }
+
+  function downloadAppleConfig() {
+    if (state.demoMode) return showToast('Профиль доступен после подключения к серверу');
+    window.open(`/api/apple-profile/${state.selectedServerId}`, '_blank');
+  }
+
+  function copyText(elId) {
+    const text = document.getElementById(elId).textContent;
+    navigator.clipboard && navigator.clipboard.writeText(text);
+    showToast('Скопировано');
+  }
+
+  async function submitPassword() {
+    try {
+      const password = document.getElementById('gatePassword').value;
+      await api('/api/auth', 'POST', { password });
+      syncWithBackend();
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminToggleDetailNodePower() {
+    if (!state.detailServerId) return;
+    const srv = state.servers.find(s => s.id === state.detailServerId);
+    if (!srv) return;
+    const nextOnline = !isServerOnline(srv);
+    if (!state.demoMode) {
+      try {
+        await api(`/api/admin/servers/${srv.id}/power`, 'POST', { online: nextOnline });
+      } catch (e) {
+        return showToast(e.message);
+      }
+    }
+    srv.online = nextOnline;
+    if (nextOnline && (!srv.ping_ms || Number(srv.ping_ms) <= 0)) {
+      srv.ping_ms = 26;
+    }
+    if (state.selectedServerId === srv.id) {
+      state.connectedSince = nextOnline ? Date.now() : null;
+      applyNodeIndicator(srv);
+    }
+    renderServerList();
+    syncDetailNodeView(srv);
+    showToast(nextOnline ? 'Узел включен' : 'Узел выключен');
+  }
+
+  async function adminRestartDetailNode() {
+    if (!state.detailServerId) return;
+    const serverId = state.detailServerId;
+    if (state.demoMode) {
+      return showToast('Команда перезагрузки отправлена');
+    }
+    try {
+      await api(`/api/admin/servers/${serverId}/restart`, 'POST');
+      showToast('Команда перезагрузки отправлена');
+      syncWithBackend();
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminDeleteDetailNode() {
+    if (!state.detailServerId) return;
+    const serverId = state.detailServerId;
+    if (state.servers.length <= 1) return showToast('Должен остаться хотя бы один узел');
+    if (state.demoMode) {
+      state.servers = state.servers.filter(s => s.id !== serverId);
+      closeAdminNodeDetail();
+      if (state.selectedServerId === serverId) selectServer(state.servers[0].id);
+      else renderServerList();
+      showToast('Сервер удален');
+      return;
+    }
+    try {
+      await api(`/api/admin/servers/${serverId}`, 'DELETE');
+      closeAdminNodeDetail();
+      showToast('Сервер удален');
+      syncWithBackend();
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminAddServer() {
+    const ip = document.getElementById('newSrvIp').value.trim();
+    const domain = document.getElementById('newSrvDomain').value.trim();
+    const countryInput = document.getElementById('newSrvCountry').value.trim();
+    if (!ip || !domain) return showToast('Укажите IP и домен');
+
+    let country = 'Новый узел';
+    let country_code = 'ND';
+    if (countryInput) {
+      const parts = countryInput.split('/').map(p => p.trim()).filter(Boolean);
+      if (parts[0]) country = parts[0];
+      if (parts[1]) country_code = parts[1].toUpperCase().slice(0, 3);
+      else country_code = country.toUpperCase().slice(0, 2);
+    }
+
+    if (state.demoMode) {
+      const nextId = (state.servers.reduce((m, s) => Math.max(m, s.id), 0) || 0) + 1;
+      state.servers.push({
+        id: nextId,
+        country,
+        country_code,
+        ip,
+        domain,
+        ping_ms: 28,
+        online: true
+      });
+      document.getElementById('newSrvIp').value = '';
+      document.getElementById('newSrvDomain').value = '';
+      document.getElementById('newSrvCountry').value = '';
+      toggleAddServerForm(false);
+      renderServerList();
+      showToast('Сервер добавлен');
+      return;
+    }
+    try {
+      const res = await api('/api/admin/servers', 'POST', { ip, domain, country, country_code });
+      document.getElementById('newSrvIp').value = '';
+      document.getElementById('newSrvDomain').value = '';
+      document.getElementById('newSrvCountry').value = '';
+      toggleAddServerForm(false);
+      showToast(`Добавлено: ${res.country || country}`);
+      syncWithBackend();
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminAddUser() {
+    const rawUsername = document.getElementById('newUserUsername').value.trim();
+    const pass = document.getElementById('newUserPass').value.trim();
+    const maxDev = Number(document.getElementById('newUserMaxDev').value) || 3;
+
+    if (!rawUsername || !pass) {
+      return showToast('Укажите юзернейм и пароль');
+    }
+    const cleanUsername = rawUsername.startsWith('@') ? rawUsername : `@${rawUsername}`;
+    const derivedLogin = rawUsername.replace(/^@+/, '');
+
+    const payload = {
+      username: cleanUsername,
+      vpn_login: derivedLogin,
+      vpn_password: pass,
+      max_devices: maxDev
+    };
+
+    if (state.demoMode) {
+      const nextId = (state.users.reduce((m, u) => Math.max(m, u.id), 0) || 0) + 1;
+      state.users.push({
+        id: nextId,
+        username: cleanUsername,
+        login: derivedLogin,
+        max_devices: maxDev,
+        devices: []
+      });
+      document.getElementById('newUserUsername').value = '';
+      document.getElementById('newUserPass').value = '';
+      renderAdminUsers();
+      showToast('Доступ выдан');
+      return;
+    }
+    try {
+      await api('/api/admin/users', 'POST', payload);
+      document.getElementById('newUserUsername').value = '';
+      document.getElementById('newUserPass').value = '';
+      showToast('Доступ выдан');
+      syncWithBackend();
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminRevokeDevice(userId, deviceId) {
+    if (state.demoMode) {
+      const user = state.users.find(u => u.id === userId);
+      if (user && Array.isArray(user.devices)) {
+        user.devices = user.devices.filter(d => String(d.id) !== String(deviceId));
+      }
+      renderAdminUsers();
+      showToast('Устройство сброшено');
+      return;
+    }
+    try {
+      await api(`/api/admin/users/${userId}/devices/${encodeURIComponent(deviceId)}`, 'DELETE');
+      showToast('Устройство сброшено');
+      syncWithBackend();
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminResetUserPass(userId, label) {
+    const nextPass = prompt(`Новый пароль для ${label}:`);
+    if (!nextPass) return;
+    if (state.demoMode) {
+      return showToast(`Пароль для ${label} обновлен`);
+    }
+    try {
+      await api(`/api/admin/users/${userId}/password`, 'POST', { password: nextPass });
+      showToast(`Пароль для ${label} обновлен`);
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminDeleteUser(userId) {
+    if (state.demoMode) {
+      state.users = state.users.filter(u => u.id !== userId);
+      state.expandedUserIds = state.expandedUserIds.filter(id => id !== userId);
+      renderAdminUsers();
+      showToast('Доступ отозван');
+      return;
+    }
+    try {
+      await api(`/api/admin/users/${userId}`, 'DELETE');
+      showToast('Доступ отозван');
+      syncWithBackend();
+    } catch (e) { showToast(e.message); }
+  }
+
+  async function adminChangePass() {
+    const new_password = document.getElementById('newAppPass').value.trim();
+    if (!new_password) return showToast('Введите новый пароль');
+    if (state.demoMode) {
+      document.getElementById('newAppPass').value = '';
+      return showToast('Пароль обновлен');
+    }
+    try {
+      await api('/api/admin/password', 'POST', { new_password });
+      document.getElementById('newAppPass').value = '';
+      showToast('Пароль обновлен');
+    } catch (e) { showToast(e.message); }
+  }
+
+  function switchTab(tabId, btn) {
+    ['tabConnect', 'tabDevices', 'tabMenu', 'tabAdmin'].forEach(id => document.getElementById(id).classList.add('hidden'));
+    document.getElementById(tabId).classList.remove('hidden');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tabId === 'tabAdmin') {
+      closeAdminNodeDetail();
+      renderAdminServers();
+      renderAdminUsers();
+    }
+  }
+
+  async function syncWithBackend() {
+    if (!tg || !tg.initData) {
+      return;
+    }
+    try {
+      const me = await api('/api/me');
+      state.demoMode = false;
+      if (me && me.is_admin === false) {
+        window.location.replace('user.html?role=user');
+        return;
+      }
+      if (!me.is_authorized) {
+        document.getElementById('lockScreen').classList.remove('hidden');
+        document.getElementById('appContent').classList.add('hidden');
+        return;
+      }
+      document.getElementById('lockScreen').classList.add('hidden');
+      document.getElementById('appContent').classList.remove('hidden');
+      if (me.vpn_account) {
+        document.getElementById('credLogin').textContent = me.vpn_account.login;
+        document.getElementById('credPass').textContent = me.vpn_account.password;
+        document.getElementById('deviceCounter').textContent = `${me.vpn_account.active_devices} / ${me.vpn_account.max_devices}`;
+        renderDevices(me.vpn_account.devices || []);
+      }
+      const srvs = await api('/api/servers');
+      if (srvs && srvs.length) {
+        state.servers = srvs;
+        selectServer(srvs[0].id);
+      }
+      const users = await api('/api/admin/users');
+      state.users = users || [];
+      renderAdminServers();
+      renderAdminUsers(state.users);
+    } catch (_) {}
+  }
+
+  renderServerList();
+  selectServer(1);
+  renderDevices([{ name: 'iPhone', ip: '10.10.0.2' }]);
+  renderAdminUsers();
+  setInterval(updateUptimeDisplay, 1000);
+  syncWithBackend();
+</script>
+</body>
+</html>
